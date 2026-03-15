@@ -119,5 +119,29 @@ const myItems = [
             "url": ""
         },
         "textureUrl": "https://i.ibb.co/fddLd31p/cape-armlets-home-by-qozaworks-2.png"
+    },
+    {
+        "id": "cape_armlets_yearn_by_qozaworks_1",
+        "name": "Yearn",
+        "sectionId": "cape_armlets",
+        "type": "steve",
+        "description": "Mining armlets for the Yearn Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/qMddMVsr/cape-armlets-yearn-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_yearn_by_qozaworks_2",
+        "name": "Yearn",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Mining armlets for the Yearn Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/vCpxsNxP/cape-armlets-yearn-by-qozaworks-2.png"
     }
 ];
