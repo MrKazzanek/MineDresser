@@ -9,7 +9,6 @@ let state = {
 let mainViewer = null;
 let itemViewers = [];
 
-// Zmienne do kontroli asynchronicznych operacji (Zapobiegają błędom i powielaniu)
 let currentRenderId = 0;
 let textureUpdateId = 0;
 let searchTimeout = null;
@@ -29,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnResetSkin').addEventListener('click', resetApp);
     document.getElementById('btnClearClothes').addEventListener('click', clearAllClothes);
 
-    // FIX: Debouncing dla wyszukiwarki głównej (Odświeża dopiero jak przestaniesz pisać)
     document.getElementById('searchInput').addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => filterWardrobe(e), 300);
@@ -51,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mainSearch.classList.remove('search-hidden'); 
     });
 
-    // Wyszukiwarka kategorii bez opóźnienia, bo działa na gotowym DOM
     document.getElementById('searchCategoryInput').addEventListener('input', filterCategories);
 
     document.querySelectorAll('.anim-btn').forEach(btn => {
@@ -90,7 +87,7 @@ function applyTheme(themeName) {
     }
 }
 
-// NAPRAWIONA FUNKCJA POBIERANIA SKINA Z NICKU (Z wykorzystaniem PlayerDB)
+// 100% niezawodne pobieranie skina i rozpoznawanie modelu (Alex/Steve)
 async function fetchSkinFromUsername() {
     const username = document.getElementById('usernameInput').value.trim();
     if (!username) return;
@@ -99,56 +96,49 @@ async function fetchSkinFromUsername() {
     errorDisplay.innerText = "Downloading player skin…";
 
     try {
-        const res = await fetch(`https://playerdb.co/api/player/minecraft/${username}`);
-        if (!res.ok) throw new Error("PlayerDB API error");
+        // Główne API: Ashcon (Nigdy nie ucina informacji o modelu)
+        const res = await fetch(`https://api.ashcon.app/mojang/v2/user/${username}`);
+        if (!res.ok) throw new Error("Ashcon API error");
         const data = await res.json();
         
-        if (!data.success || !data.data || !data.data.player) throw new Error("Not found");
-
-        const rawProp = data.data.player.properties.find(p => p.name === "textures");
-        if (!rawProp) throw new Error("No texture data");
-
-        const textureJson = JSON.parse(atob(rawProp.value));
-        const skinData = textureJson.textures.SKIN;
-
-        state.modelType = (skinData.metadata && skinData.metadata.model === "slim") ? 'alex' : 'steve';
+        state.modelType = data.textures.slim ? 'alex' : 'steve';
         
+        // Zaznaczenie radio buttona
         const radioBtn = document.querySelector(`input[name="modelType"][value="${state.modelType}"]`);
         if (radioBtn) radioBtn.checked = true;
 
+        const skinUrl = `data:image/png;base64,${data.textures.skin.data}`;
         errorDisplay.innerText = "";
-        startGame(skinData.url); 
+        startGame(skinUrl); 
 
     } catch (e) {
+        // Zapasowe podejście: PlayerDB (Weryfikacja gracza) + Minotar (Analiza Pikseli)
         try {
-            const timestamp = new Date().getTime();
-            const res = await fetch(`https://api.ashcon.app/mojang/v2/user/${username}?_=${timestamp}`);
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-            
-            let isSlim = false;
-            
-            if (data.textures && data.textures.raw && data.textures.raw.value) {
-                try {
-                    const decoded = JSON.parse(atob(data.textures.raw.value));
-                    if (decoded.textures.SKIN.metadata && decoded.textures.SKIN.metadata.model === "slim") {
-                        isSlim = true;
-                    }
-                } catch(err) {
-                    isSlim = data.textures.slim === true;
-                }
-            } else if (data.textures && data.textures.slim) {
-                isSlim = data.textures.slim === true;
-            }
-            
-            state.modelType = isSlim ? 'alex' : 'steve';
+            const checkRes = await fetch(`https://playerdb.co/api/player/minecraft/${username}`);
+            const checkData = await checkRes.json();
+            if (!checkData.success) throw new Error("Player not found");
+
+            const skinUrl = `https://minotar.net/skin/${username}?_=${Date.now()}`;
+            const img = await loadImage(skinUrl);
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 64; 
+            tempCanvas.height = 64;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(img, 0, 0);
+
+            // Analiza piksela (54, 20) odpowiadającego za fragment prawej ręki.
+            // Alex ma rękę o szerokości 3 pikseli (zostawia to miejsce puste/przezroczyste).
+            // Steve ma rękę o szerokości 4 pikseli (piksel jest zamalowany).
+            const alpha = tempCtx.getImageData(54, 20, 1, 1).data[3];
+            state.modelType = (alpha === 0) ? 'alex' : 'steve';
             
             const radioBtn = document.querySelector(`input[name="modelType"][value="${state.modelType}"]`);
             if (radioBtn) radioBtn.checked = true;
             
-            const skinUrl = `data:image/png;base64,${data.textures.skin.data}`;
             errorDisplay.innerText = "";
-            startGame(skinUrl);
+            startGame(tempCanvas.toDataURL('image/png'));
+
         } catch (fallbackErr) {
             errorDisplay.style.color = "var(--danger-color)";
             errorDisplay.innerText = "Error: No such player found (Premium).";
@@ -187,7 +177,6 @@ function resetApp() {
     document.getElementById('usernameInput').value = "";
     document.getElementById('initError').innerText = "";
 
-    // Pełne czyszczenie pamięci
     currentRenderId++;
     textureUpdateId++;
     itemViewers.forEach(v => v.dispose());
@@ -228,14 +217,13 @@ function changeAnimation(animType) {
     else mainViewer.animation = new skinview3d.IdleAnimation();
 }
 
-// FIX: Aktualizacja tekstur jest chroniona przed przerywaniem (Render ID)
 async function updateSkinTextures() {
     const thisUpdateId = ++textureUpdateId;
     mergeCtx.clearRect(0, 0, 64, 64);
 
     try {
         const baseImg = await loadImage(state.baseSkinUrl);
-        if (thisUpdateId !== textureUpdateId) return; // Przerwij, jeśli w międzyczasie kliknięto coś innego
+        if (thisUpdateId !== textureUpdateId) return;
         mergeCtx.drawImage(baseImg, 0, 0);
         
         for (const item of state.equippedItems) {
@@ -270,11 +258,10 @@ function loadImage(src) {
 }
 
 function renderWardrobe(filterText = "") {
-    const thisRenderId = ++currentRenderId; // Oznaczamy nowe renderowanie
+    const thisRenderId = ++currentRenderId; 
     const container = document.getElementById('wardrobeContent');
     container.innerHTML = '';
 
-    // Bezpieczne czyszczenie WebGL
     itemViewers.forEach(v => {
         if(v.canvas && v.canvas.parentNode) v.canvas.parentNode.removeChild(v.canvas);
         v.dispose();
@@ -284,6 +271,7 @@ function renderWardrobe(filterText = "") {
     mySections.forEach(section => {
         const sectionItems = myItems.filter(item => {
             if (item.sectionId !== section.id) return false;
+            // Poprawne filtrowanie po typie
             if (item.type !== 'all' && item.type !== state.modelType) return false;
             
             const searchStr = filterText.toLowerCase();
@@ -332,7 +320,6 @@ function renderWardrobe(filterText = "") {
 
             grid.appendChild(card);
             
-            // Renderujemy 3D, przekazując ID aktualnego zadania
             createMiniViewer(`preview-${item.id}`, item, card, thisRenderId);
         });
 
@@ -341,9 +328,8 @@ function renderWardrobe(filterText = "") {
     });
 }
 
-// FIX: Funkcja z bezpiecznikiem thisRenderId przerywa działanie, gdy wykryje stary kod
 async function createMiniViewer(containerId, item, cardElement, thisRenderId) {
-    if (thisRenderId !== currentRenderId) return; // Przerwij
+    if (thisRenderId !== currentRenderId) return;
 
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = 64; tempCanvas.height = 64;
@@ -351,16 +337,16 @@ async function createMiniViewer(containerId, item, cardElement, thisRenderId) {
 
     try {
         const bImg = await loadImage(state.baseSkinUrl);
-        if (thisRenderId !== currentRenderId) return; // Przerwij po pobraniu (asynchroniczność)
+        if (thisRenderId !== currentRenderId) return; 
         tCtx.drawImage(bImg, 0, 0);
         
         const iImg = await loadImage(item.textureUrl);
-        if (thisRenderId !== currentRenderId) return; // Przerwij
+        if (thisRenderId !== currentRenderId) return; 
         tCtx.drawImage(iImg, 0, 0);
     } catch(e) { return; }
 
     const container = document.getElementById(containerId);
-    if (!container || thisRenderId !== currentRenderId) return; // Ostateczny test przed renderem
+    if (!container || thisRenderId !== currentRenderId) return;
 
     const viewer = new skinview3d.SkinViewer({
         width: container.clientWidth || 200,
@@ -413,7 +399,7 @@ function renderSidebarCategories() {
         li.innerText = sec.name;
         li.dataset.name = sec.name.toLowerCase();
         li.onclick = () => {
-            const el = document.getElementById(`sec-${sec.id}`); // FIX: dodane znaki ` wokół zmiennej
+            const el = document.getElementById(`sec-${sec.id}`);
             if(el) {
                 const panel = document.querySelector('.right-panel');
                 panel.scrollTo({ top: el.offsetTop - panel.offsetTop - 20, behavior: 'smooth' });
