@@ -17,6 +17,6 @@ const myItems = [
             "name": "QozaWorks",
             "url": ""
         },
-        "textureUrl": "https://i.ibb.co/fYzjbPkw/hats-mcc-crown-by-mrkazanek-1.png"
+        "textureUrl": "https://i.ibb.co/DHFr25g5/hats-mcc-crown-by-mrkazanek-1.png"
     }
 ];
