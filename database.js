@@ -35,5 +35,17 @@ const myItems = [
             "url": ""
         },
         "textureUrl": "https://i.ibb.co/QjFL1HJp/cape-armlets-mojang-office-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_mojang_office_by_qozaworks_2",
+        "name": "Mojang Office",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Perfect armlets to match the Mojang Office Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/8nCHt8Sw/cape-armlets-mojang-office-by-qozaworks-2.png"
     }
 ];
