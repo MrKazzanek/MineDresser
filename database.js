@@ -95,5 +95,29 @@ const myItems = [
             "url": ""
         },
         "textureUrl": "https://i.ibb.co/yBbx8Y4T/cape-armlets-menace-by-qozaworks-2.png"
+    },
+    {
+        "id": "cape_armlets_home_by_qozaworks_1",
+        "name": "Home",
+        "sectionId": "cape_armlets",
+        "type": "steve",
+        "description": "Armlets for the Home Cape with green accents.",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/HTZVT2tN/cape-armlets-home-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_home_by_qozaworks_2",
+        "name": "Home",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Armlets for the Home Cape with green accents.",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/fddLd31p/cape-armlets-home-by-qozaworks-2.png"
     }
 ];
