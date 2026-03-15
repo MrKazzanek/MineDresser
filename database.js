@@ -71,5 +71,29 @@ const myItems = [
             "url": ""
         },
         "textureUrl": "https://i.ibb.co/Wpv9rXm5/cape-armlets-mcc-by-qozaworks-2.png"
+    },
+    {
+        "id": "cape_armlets_menace_by_qozaworks_1",
+        "name": "Menace",
+        "sectionId": "cape_armlets",
+        "type": "steve",
+        "description": "Perfect armlets for the Menace Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/yHc71rN/cape-armlets-menace-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_menace_by_qozaworks_2",
+        "name": "Menace",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Perfect armlets for the Menace Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/yBbx8Y4T/cape-armlets-menace-by-qozaworks-2.png"
     }
 ];
