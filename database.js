@@ -1,6 +1,6 @@
 const mySections = [
     {
-        "id": "hats-and-caps",
+        "id": "hats",
         "name": "Hats and caps",
         "maxEquip": 1
     }
@@ -8,7 +8,7 @@ const mySections = [
 
 const myItems = [
     {
-        "id": "hats-mcc-crown-by-mrkazanek-1",
+        "id": "hats_mcc-crown_by_mrkazanek_1",
         "name": "MCC Crown",
         "sectionId": "hats-and-caps",
         "type": "all",
