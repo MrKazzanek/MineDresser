@@ -1,0 +1,22 @@
+const mySections = [
+    {
+        "id": "hats-and-caps",
+        "name": "Hats and caps",
+        "maxEquip": 1
+    }
+];
+
+const myItems = [
+    {
+        "id": "hats-mcc-crown-by-mrkazanek-1",
+        "name": "MCC Crown",
+        "sectionId": "hats-and-caps",
+        "type": "all",
+        "description": "Crown inspired by the popular MCC server design",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/fYzjbPkw/hats-mcc-crown-by-mrkazanek-1.png"
+    }
+];

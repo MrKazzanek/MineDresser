@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MineDresser - Panel Zarządzania Bazą</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --muted: #94a3b8;
+            --border: #334155; --accent: #6366f1; --accent-hover: #818cf8;
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
+            --radius: 12px; --shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Header */
+        header { background: var(--panel); padding: 15px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 10;}
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        .logo i { color: var(--accent); }
+        .header-actions { display: flex; gap: 15px; }
+
+        /* Layout */
+        .main-container { display: flex; flex: 1; overflow: hidden; gap: 20px; padding: 20px; }
+        .col { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
+        .col-left { flex: 1; min-width: 350px; max-width: 450px; }
+        .col-right { flex: 2; }
+
+        /* Zakładki (Tabs) */
+        .tabs { display: flex; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); flex-shrink: 0;}
+        .tab-btn { flex: 1; padding: 15px; background: transparent; border: none; color: var(--muted); font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 1rem; border-bottom: 3px solid transparent;}
+        .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.02);}
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--panel);}
+
+        /* Formularze */
+        .tab-content { display: none; padding: 25px; overflow-y: auto; flex: 1;}
+        .tab-content.active { display: block; }
+        
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.95rem; transition: 0.2s; outline: none;}
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+        .hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block; }
+
+        /* Przyciski */
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem;}
+        .btn-full { width: 100%; margin-top: 10px; padding: 14px;}
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px);}
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2);}
+        .btn-danger:hover { background: var(--danger); color: white; }
+        .btn-icon { padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--muted); border: none; cursor: pointer; transition: 0.2s;}
+        .btn-icon:hover { background: var(--danger); color: white;}
+
+        /* Podgląd list (Prawa kolumna) */
+        .list-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
+        .list-header h2 { font-size: 1.2rem; }
+        .data-list { overflow-y: auto; padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px;}
+        
+        .list-item { background: var(--bg); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;}
+        .list-item:hover { border-color: var(--muted); }
+        .item-info h4 { font-size: 1rem; margin-bottom: 5px; color: var(--text); display: flex; align-items: center; gap: 10px;}
+        .item-info p { font-size: 0.85rem; color: var(--muted); }
+        .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 20px; background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-weight: 600; text-transform: uppercase;}
+        .badge.type-all { color: var(--success); border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.1);}
+        .badge.type-steve { color: #3b82f6; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.1);}
+        .badge.type-alex { color: #d946ef; border-color: rgba(217,70,239,0.3); background: rgba(217,70,239,0.1);}
+
+        /* Kod Wyjściowy */
+        .code-container { padding: 20px; border-top: 1px solid var(--border); background: #0b1120; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; max-height: 250px;}
+        .code-container textarea { flex: 1; width: 100%; resize: none; background: transparent; border: none; color: #a5b4fc; font-family: monospace; font-size: 0.85rem; outline: none; }
+
+        /* Toasty (Powiadomienia) */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 9999;}
+        .toast { background: var(--panel); border-left: 4px solid var(--accent); padding: 15px 20px; border-radius: 8px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 0.9rem; animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 2.7s; opacity: 0; transform: translateX(100%);}
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        /* Ukryty input pliku */
+        #importFileInput { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"><i class="fa-solid fa-database"></i> MineDresser Generator</div>
+        <div class="header-actions">
+            <button class="btn btn-danger" onclick="clearDatabase()"><i class="fa-solid fa-trash"></i> Wyczyść wszystko</button>
+            <label for="importFileInput" class="btn btn-success" style="margin: 0;"><i class="fa-solid fa-file-import"></i> Importuj plik</label>
+            <input type="file" id="importFileInput" accept=".js" onchange="importDatabase(event)">
+            <button class="btn btn-primary" onclick="downloadJS()"><i class="fa-solid fa-download"></i> Pobierz database.js</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <!-- LEWA KOLUMNA (Formularze) -->
+        <div class="col col-left">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('items')"><i class="fa-solid fa-shirt"></i> Dodaj Ubranie</button>
+                <button class="tab-btn" onclick="switchTab('sections')"><i class="fa-solid fa-folder-tree"></i> Dodaj Sekcję</button>
+            </div>
+
+            <!-- Formularz: Ubrania -->
+            <div id="tab-items" class="tab-content active">
+                <div class="form-group">
+                    <label>Nazwa ubrania</label>
+                    <input type="text" id="itemName" placeholder="np. Diamentowa Korona">
+                </div>
+                <div class="form-group">
+                    <label>Unikalne ID <span style="text-transform:none; font-weight:normal;">(Generowane automatycznie)</span></label>
+                    <input type="text" id="itemId" placeholder="np. diamentowa_korona">
+                </div>
+                <div class="form-group">
+                    <label>Kategoria (Sekcja)</label>
+                    <select id="itemSec"></select>
+                    <span class="hint">Musisz najpierw stworzyć sekcję w drugiej zakładce.</span>
+                </div>
+                <div class="form-group">
+                    <label>Kompatybilność modelu</label>
+                    <select id="itemType">
+                        <option value="all">Uniwersalne (Steve i Alex)</option>
+                        <option value="steve">Tylko Steve (Klasyczny)</option>
+                        <option value="alex">Tylko Alex (Smukła)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Opis (Opcjonalnie)</label>
+                    <input type="text" id="itemDesc" placeholder="Krótki opis przedmiotu...">
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Autor</label>
+                        <input type="text" id="itemAuthorName" placeholder="Twój nick">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Link autora (Opcj.)</label>
+                        <input type="text" id="itemAuthorUrl" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Link do pliku tekstury (.png)</label>
+                    <input type="text" id="itemUrl" placeholder="np. https://i.imgur.com/xyz.png">
+                </div>
+                <button class="btn btn-primary btn-full" onclick="addItem()"><i class="fa-solid fa-plus"></i> Dodaj Ubranie do bazy</button>
+            </div>
+
+            <!-- Formularz: Sekcje -->
+            <div id="tab-sections" class="tab-content">
+                <div class="form-group">
+                    <label>Nazwa Sekcji</label>
+                    <input type="text" id="secName" placeholder="np. Czapki i Maski">
+                </div>
+                <div class="form-group">
+                    <label>ID Sekcji</label>
+                    <input type="text" id="secId" placeholder="np. headwear">
+                </div>
+                <div class="form-group">
+                    <label>Maksymalna ilość założeń na raz</label>
+                    <input type="number" id="secMax" value="1" min="1">
+                    <span class="hint">Ile ubrań z tej kategorii gracz może nosić na raz? (Zwykle 1)</span>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="addSection()"><i class="fa-solid fa-plus"></i> Stwórz Sekcję</button>
+            </div>
+        </div>
+
+        <!-- PRAWA KOLUMNA (Podgląd i kod) -->
+        <div class="col col-right">
+            <div class="list-header">
+                <h2>Podgląd bazy danych</h2>
+                <div>
+                    <button class="btn btn-icon" title="Pokaż Sekcje" onclick="switchPreview('sec')" id="btnPrevSec"><i class="fa-solid fa-folder"></i></button>
+                    <button class="btn btn-icon" title="Pokaż Ubrania" onclick="switchPreview('itm')" id="btnPrevItm" style="background:var(--accent); color:white;"><i class="fa-solid fa-shirt"></i></button>
+                </div>
+            </div>
+
+            <div class="data-list" id="previewList">
+                <!-- Tu generuje się lista z JS -->
+            </div>
+
+            <div class="code-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-size: 0.85rem; font-weight: bold; color: var(--muted); text-transform: uppercase;">Podgląd kodu (database.js)</span>
+                    <button class="btn btn-icon" onclick="copyCode()" title="Kopiuj Kod" style="background:var(--panel); border:1px solid var(--border);"><i class="fa-solid fa-copy"></i></button>
+                </div>
+                <textarea id="outputCode" readonly></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // STAN APLIKACJI
+        let db = { sections: [], items: [] };
+        let previewMode = 'itm'; // 'itm' lub 'sec'
+
+        // INICJALIZACJA
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            
+            // Auto-generowanie ID na podstawie nazwy (Dla Ubrań)
+            document.getElementById('itemName').addEventListener('input', (e) => {
+                const idInput = document.getElementById('itemId');
+                if(!idInput.dataset.manual) idInput.value = slugify(e.target.value);
+            });
+            document.getElementById('itemId').addEventListener('input', (e) => { e.target.dataset.manual = "true"; });
+
+            // Auto-generowanie ID na podstawie nazwy (Dla Sekcji)
+            document.getElementById('secName').addEventListener('input', (e) => {
+                const idInput = document.getElementById('secId');
+                if(!idInput.dataset.manual) idInput.value = slugify(e.target.value);
+            });
+            document.getElementById('secId').addEventListener('input', (e) => { e.target.dataset.manual = "true"; });
+        });
+
+        // SYSTEM ZAKŁADEK I WIDOKÓW
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function switchPreview(mode) {
+            previewMode = mode;
+            document.getElementById('btnPrevSec').style.background = mode === 'sec' ? 'var(--accent)' : 'rgba(255,255,255,0.05)';
+            document.getElementById('btnPrevSec').style.color = mode === 'sec' ? 'white' : 'var(--muted)';
+            document.getElementById('btnPrevItm').style.background = mode === 'itm' ? 'var(--accent)' : 'rgba(255,255,255,0.05)';
+            document.getElementById('btnPrevItm').style.color = mode === 'itm' ? 'white' : 'var(--muted)';
+            renderUI();
+        }
+
+        // AUTO-SAVE I ŁADOWANIE
+        function loadFromStorage() {
+            const saved = localStorage.getItem('mineDresserDB');
+            if (saved) {
+                try { db = JSON.parse(saved); } catch(e) { console.error("Błąd pamięci"); }
+            } else {
+                // Przykładowe dane na start
+                db.sections = [{ id: "headwear", name: "Czapki", maxEquip: 1 }];
+            }
+            renderUI();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('mineDresserDB', JSON.stringify(db));
+            renderUI();
+        }
+
+        // OPERACJE NA BAZIE (CRUD)
+        function addSection() {
+            const id = document.getElementById('secId').value.trim();
+            const name = document.getElementById('secName').value.trim();
+            const max = parseInt(document.getElementById('secMax').value);
+
+            if(!id || !name) return toast("Wypełnij wymagane pola sekcji!", "error");
+            if(db.sections.find(s => s.id === id)) return toast("Sekcja z tym ID już istnieje!", "error");
+
+            db.sections.push({ id, name, maxEquip: max });
+            toast(`Dodano sekcję: ${name}`, "success");
+            
+            document.getElementById('secName').value = "";
+            document.getElementById('secId').value = "";
+            document.getElementById('secId').dataset.manual = "";
+            saveToStorage();
+            if(previewMode !== 'sec') switchPreview('sec');
+        }
+
+        function deleteSection(id) {
+            if(db.items.some(i => i.sectionId === id)) {
+                return toast("Nie możesz usunąć tej sekcji! Posiada ona przypisane ubrania. Usuń je najpierw.", "error");
+            }
+            if(confirm("Na pewno usunąć tę sekcję?")) {
+                db.sections = db.sections.filter(s => s.id !== id);
+                toast("Usunięto sekcję", "success");
+                saveToStorage();
+            }
+        }
+
+        function addItem() {
+            if(db.sections.length === 0) return toast("Najpierw musisz dodać chociaż jedną sekcję!", "error");
+
+            const item = {
+                id: document.getElementById('itemId').value.trim(),
+                name: document.getElementById('itemName').value.trim(),
+                sectionId: document.getElementById('itemSec').value,
+                type: document.getElementById('itemType').value,
+                description: document.getElementById('itemDesc').value.trim(),
+                author: {
+                    name: document.getElementById('itemAuthorName').value.trim() || "Nieznany",
+                    url: document.getElementById('itemAuthorUrl').value.trim()
+                },
+                textureUrl: document.getElementById('itemUrl').value.trim()
+            };
+
+            if(!item.id || !item.name || !item.textureUrl) return toast("ID, Nazwa i Link do tekstury są wymagane!", "error");
+            if(db.items.find(i => i.id === item.id)) return toast("Ubranie z tym ID już istnieje!", "error");
+
+            db.items.push(item);
+            toast(`Dodano ubranie: ${item.name}`, "success");
+
+            document.getElementById('itemName').value = "";
+            document.getElementById('itemId').value = "";
+            document.getElementById('itemDesc').value = "";
+            document.getElementById('itemUrl').value = "";
+            document.getElementById('itemId').dataset.manual = "";
+            saveToStorage();
+            if(previewMode !== 'itm') switchPreview('itm');
+        }
+
+        function deleteItem(id) {
+            if(confirm("Na pewno usunąć to ubranie?")) {
+                db.items = db.items.filter(i => i.id !== id);
+                toast("Usunięto ubranie", "success");
+                saveToStorage();
+            }
+        }
+
+        function clearDatabase() {
+            if(confirm("UWAGA! Czy na pewno chcesz wykasować całą bazę ubrań i sekcji? Ta operacja jest nieodwracalna!")) {
+                db = { sections: [], items: [] };
+                saveToStorage();
+                toast("Baza została wyczyszczona", "success");
+            }
+        }
+
+        // RENDEROWANIE INTERFEJSU
+        function renderUI() {
+            // Aktualizacja opcji wyboru sekcji w formularzu ubrań
+            const secSelect = document.getElementById('itemSec');
+            const currentSecVal = secSelect.value;
+            secSelect.innerHTML = db.sections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            if(currentSecVal && db.sections.find(s=>s.id === currentSecVal)) secSelect.value = currentSecVal;
+
+            // Renderowanie Listy Podglądu
+            const listObj = document.getElementById('previewList');
+            listObj.innerHTML = '';
+
+            if (previewMode === 'sec') {
+                if(db.sections.length === 0) listObj.innerHTML = '<span style="color:var(--muted); text-align:center; margin-top:20px;">Brak sekcji w bazie</span>';
+                db.sections.forEach(s => {
+                    const count = db.items.filter(i => i.sectionId === s.id).length;
+                    listObj.innerHTML += `
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4><i class="fa-solid fa-folder-open" style="color:var(--accent)"></i> ${s.name} <span class="badge" style="border:none;">MAX: ${s.maxEquip}</span></h4>
+                                <p>ID: ${s.id} | Przypisane ubrania: ${count}</p>
+                            </div>
+                            <button class="btn-icon" onclick="deleteSection('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            } else {
+                if(db.items.length === 0) listObj.innerHTML = '<span style="color:var(--muted); text-align:center; margin-top:20px;">Brak ubrań w bazie</span>';
+                db.items.forEach(i => {
+                    const secName = (db.sections.find(s => s.id === i.sectionId) || {}).name || i.sectionId;
+                    const typeBadge = i.type === 'all' ? 'Uniwersalne' : (i.type === 'steve' ? 'Tylko Steve' : 'Tylko Alex');
+                    listObj.innerHTML += `
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4>${i.name} <span class="badge type-${i.type}">${typeBadge}</span></h4>
+                                <p>ID: ${i.id} | Sekcja: ${secName} | Autor: ${i.author.name}</p>
+                            </div>
+                            <button class="btn-icon" onclick="deleteItem('${i.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            }
+
+            // Generowanie kodu wyjściowego
+            const codeStr = `const mySections = ${JSON.stringify(db.sections, null, 4)};\n\nconst myItems = ${JSON.stringify(db.items, null, 4)};`;
+            document.getElementById('outputCode').value = codeStr;
+        }
+
+        // IMPORT / EXPORT
+        function downloadJS() {
+            const code = document.getElementById('outputCode').value;
+            const blob = new Blob([code], { type: "text/javascript" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "database.js";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast("Pobieranie pliku rozpoczęte", "success");
+        }
+
+        function importDatabase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                try {
+                    // Sprytny sposób na wyciągnięcie obiektów JS z tekstu (Zabezpieczenie przed błędem parsera)
+                    const cleanCode = content.replace(/const /g, 'var '); 
+                    const parser = new Function(`${cleanCode}; return { s: typeof mySections !== 'undefined' ? mySections : [], i: typeof myItems !== 'undefined' ? myItems : [] };`);
+                    const result = parser();
+                    
+                    db.sections = result.s;
+                    db.items = result.i;
+                    saveToStorage();
+                    toast("Pomyślnie zaimportowano bazę!", "success");
+                } catch(err) {
+                    console.error(err);
+                    toast("Błąd odczytu! Plik nie jest poprawnym database.js", "error");
+                }
+                event.target.value = ""; // Reset inputu
+            };
+            reader.readAsText(file);
+        }
+
+        function copyCode() {
+            const txt = document.getElementById('outputCode');
+            txt.select();
+            document.execCommand('copy');
+            toast("Skopiowano kod do schowka!", "success");
+        }
+
+        // NARZĘDZIA POMOCNICZE
+        function slugify(text) {
+            const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìıİłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+            const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
+            const p = new RegExp(a.split('').join('|'), 'g');
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '_')
+                .replace(p, c => b.charAt(a.indexOf(c)))
+                .replace(/&/g, '_and_')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '_')
+                .replace(/^-+/, '').replace(/-+$/, '');
+        }
+
+        function toast(msg, type = "success") {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check" style="color:var(--success)"></i>' : '<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i>';
+            el.className = `toast ${type}`;
+            el.innerHTML = `${icon} <span>${msg}</span>`;
+            container.appendChild(el);
+            setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, 3000);
+        }
+    </script>
+</body>
+</html>

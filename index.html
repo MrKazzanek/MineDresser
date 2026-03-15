@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MineDresser</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="minedresser_small_logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.0/bundles/skinview3d.bundle.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="minedresser_full_logo.png" alt="Logo" class="logo-img">
+        </div>
+        <div class="theme-switch" id="themeBtn">
+            <i class="fa-solid fa-moon"></i> <span id="themeLabel">Dark</span>
+        </div>
+    </header>
+
+    <!-- Modal Początkowy -->
+    <div id="initModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome to the Dressing Room</h2>
+                <p>Customize your character before entering</p>
+            </div>
+            
+            <div class="model-toggle">
+                <input type="radio" id="m_steve" name="modelType" value="steve" checked>
+                <label for="m_steve"><img src="https://minotar.net/helm/MHF_Steve/32.png" alt="Steve"> Steve</label>
+                
+                <input type="radio" id="m_alex" name="modelType" value="alex">
+                <label for="m_alex"><img src="https://minotar.net/helm/Alex/32.png" alt="Alex"> Alex</label>
+            </div>
+
+            <div class="input-card">
+                <label>Download a skin from Mojang servers</label>
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="usernameInput" placeholder="Premium player username...">
+                    <button id="btnFetchUser">Search</button>
+                </div>
+            </div>
+            
+            <div class="divider"><span>OR UPLOAD FROM YOUR DEVICE</span></div>
+            
+            <div class="input-card file-card">
+                <label for="skinFileInput" class="file-upload-label">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Click to select a .PNG file</span>
+                </label>
+                <input type="file" id="skinFileInput" accept="image/png" style="display:none;">
+            </div>
+            <p class="error-msg" id="initError"></p>
+        </div>
+    </div>
+
+    <!-- Główna aplikacja ukryta na starcie (display:none rozwiązuje problem z układem w tle) -->
+    <main id="appContainer" style="display: none;">
+        
+        <!-- LEWY PANEL -->
+        <aside class="left-panel">
+            <div class="controls-top">
+                <button id="btnResetSkin" class="btn outline-btn" title="Change the base skin"><i class="fa-solid fa-rotate-left"></i></button>
+                <button id="btnClearClothes" class="btn danger-btn flex-grow"><i class="fa-solid fa-shirt"></i> Remove All Clothes</button>
+            </div>
+
+            <div class="viewer-container" id="main3dViewer"></div>
+            
+            <div class="animation-controls">
+                <button class="anim-btn active" data-anim="idle"><i class="fa-solid fa-person"></i> Standing</button>
+                <button class="anim-btn" data-anim="walk"><i class="fa-solid fa-person-walking"></i> Walking</button>
+                <button class="anim-btn" data-anim="run"><i class="fa-solid fa-person-running"></i> Running</button>
+            </div>
+
+            <!-- Panel Wyposażenia -->
+            <div class="equipped-section">
+                <div class="equipped-header">
+                    <h3><i class="fa-solid fa-tags"></i> Equipped clothes</h3>
+                    <canvas id="canvas2d" width="64" height="64" title="2D texture preview"></canvas>
+                </div>
+                <div class="equipped-list-container">
+                    <div id="equippedList" class="chips-container">
+                        <span class="empty-msg">No clothes on character</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btnDownloadCombined" class="btn primary bottom-btn"><i class="fa-solid fa-download"></i> Download Finished Skin</button>
+        </aside>
+
+        <!-- SZAFA -->
+        <section class="right-panel">
+            <div class="wardrobe-header">
+                <h2>Clothes Catalog</h2>
+                <div class="header-tools">
+                    <div class="search-bar" id="mainSearchBar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search in the wardrobe…">
+                    </div>
+                    <button id="btnToggleSidebar" class="btn primary icon-btn"><i class="fa-solid fa-layer-group"></i> Categories</button>
+                </div>
+            </div>
+            
+            <div id="wardrobeContent" class="wardrobe-content">
+                <!-- Sekcje -->
+            </div>
+        </section>
+
+        <!-- PANEL BOCZNY (Kategorie) -->
+        <aside id="categorySidebar" class="category-sidebar">
+            <div class="sidebar-header">
+                <h3>Categories</h3>
+                <button id="btnCloseSidebar" class="btn-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="search-bar small-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchCategoryInput" placeholder="Filter categories…">
+            </div>
+            <ul id="categoryList" class="category-list"></ul>
+        </aside>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-studio">Created by QozaWorks</div>
+            <div class="footer-links">
+                <a href="https://qozaworks.netlify.app/"><i class="fa-solid fa-globe"></i> Home Page</a>
+                <a href="https://x.com/PanKazanek"><i class="fa-brands fa-twitter"></i> Twitter (X)</a>
+                <a href="https://discord.gg/RaQhKWwgQR"><i class="fa-brands fa-discord"></i> Discord</a>
+                
+            </div>
+        </div>
+        <div class="footer-copy">&copy; 2026 All rights reserved.</div>
+    </footer>
+
+    <canvas id="mergeCanvas" width="64" height="64" style="display:none;"></canvas>
+    
+    <script src="database.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
