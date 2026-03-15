@@ -87,9 +87,7 @@
         @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
         @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
 
-        /* Ukryty input pliku */
         #importFileInput { display: none; }
-
     </style>
 </head>
 <body>
@@ -116,18 +114,29 @@
             <!-- Formularz: Ubrania -->
             <div id="tab-items" class="tab-content active">
                 <div class="form-group">
+                    <label>Kategoria (Sekcja)</label>
+                    <select id="itemSec"></select>
+                    <span class="hint">Wpływa na pierwszy człon ID.</span>
+                </div>
+                <div class="form-group">
                     <label>Nazwa ubrania</label>
                     <input type="text" id="itemName" placeholder="np. Diamentowa Korona">
                 </div>
-                <div class="form-group">
-                    <label>Unikalne ID <span style="text-transform:none; font-weight:normal;">(Generowane automatycznie)</span></label>
-                    <input type="text" id="itemId" placeholder="np. diamentowa_korona">
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Autor</label>
+                        <input type="text" id="itemAuthorName" placeholder="Twój nick">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Link autora (Opcj.)</label>
+                        <input type="text" id="itemAuthorUrl" placeholder="https://...">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Kategoria (Sekcja)</label>
-                    <select id="itemSec"></select>
-                    <span class="hint">Musisz najpierw stworzyć sekcję w drugiej zakładce.</span>
+                    <label>Unikalne ID <span style="text-transform:none; font-weight:normal; color:var(--accent);">(Auto-Generator)</span></label>
+                    <input type="text" id="itemId" placeholder="Wypełnij sekcję, nazwę i autora..." readonly style="background: rgba(0,0,0,0.2); border-color: transparent;">
                 </div>
+                
                 <div class="form-group">
                     <label>Kompatybilność modelu</label>
                     <select id="itemType">
@@ -139,16 +148,6 @@
                 <div class="form-group">
                     <label>Opis (Opcjonalnie)</label>
                     <input type="text" id="itemDesc" placeholder="Krótki opis przedmiotu...">
-                </div>
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex:1;">
-                        <label>Autor</label>
-                        <input type="text" id="itemAuthorName" placeholder="Twój nick">
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Link autora (Opcj.)</label>
-                        <input type="text" id="itemAuthorUrl" placeholder="https://...">
-                    </div>
                 </div>
                 <div class="form-group">
                     <label>Link do pliku tekstury (.png)</label>
@@ -165,7 +164,7 @@
                 </div>
                 <div class="form-group">
                     <label>ID Sekcji</label>
-                    <input type="text" id="secId" placeholder="np. headwear">
+                    <input type="text" id="secId" placeholder="np. czapki_i_maski">
                 </div>
                 <div class="form-group">
                     <label>Maksymalna ilość założeń na raz</label>
@@ -206,20 +205,19 @@
     <script>
         // STAN APLIKACJI
         let db = { sections: [], items: [] };
-        let previewMode = 'itm'; // 'itm' lub 'sec'
+        let previewMode = 'itm'; 
 
         // INICJALIZACJA
         document.addEventListener('DOMContentLoaded', () => {
             loadFromStorage();
             
-            // Auto-generowanie ID na podstawie nazwy (Dla Ubrań)
-            document.getElementById('itemName').addEventListener('input', (e) => {
-                const idInput = document.getElementById('itemId');
-                if(!idInput.dataset.manual) idInput.value = slugify(e.target.value);
+            // Event Listeners dla Auto-Generowania ID Ubrania
+            const idTriggers = ['itemName', 'itemAuthorName', 'itemSec'];
+            idTriggers.forEach(id => {
+                document.getElementById(id).addEventListener('input', generateItemId);
             });
-            document.getElementById('itemId').addEventListener('input', (e) => { e.target.dataset.manual = "true"; });
 
-            // Auto-generowanie ID na podstawie nazwy (Dla Sekcji)
+            // Event Listener dla ID Sekcji (spacje na _)
             document.getElementById('secName').addEventListener('input', (e) => {
                 const idInput = document.getElementById('secId');
                 if(!idInput.dataset.manual) idInput.value = slugify(e.target.value);
@@ -227,7 +225,35 @@
             document.getElementById('secId').addEventListener('input', (e) => { e.target.dataset.manual = "true"; });
         });
 
-        // SYSTEM ZAKŁADEK I WIDOKÓW
+        // FUNKCJA GENERUJĄCA NOWY STANDARD ID UBRANIA
+        function generateItemId() {
+            const secId = document.getElementById('itemSec').value;
+            const name = document.getElementById('itemName').value;
+            const author = document.getElementById('itemAuthorName').value;
+
+            if (!secId || !name) {
+                document.getElementById('itemId').value = "";
+                return;
+            }
+
+            const cleanSec = slugify(secId);
+            const cleanName = slugify(name);
+            const cleanAuthor = author ? `_by_${slugify(author)}` : `_by_unknown`;
+
+            const baseId = `${cleanSec}_${cleanName}${cleanAuthor}`;
+            
+            // Liczenie duplikatów dla dopisania cyfry (Y)
+            let suffix = 1;
+            let finalId = `${baseId}_${suffix}`;
+            
+            while(db.items.find(i => i.id === finalId)) {
+                suffix++;
+                finalId = `${baseId}_${suffix}`;
+            }
+
+            document.getElementById('itemId').value = finalId;
+        }
+
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -244,13 +270,11 @@
             renderUI();
         }
 
-        // AUTO-SAVE I ŁADOWANIE
         function loadFromStorage() {
             const saved = localStorage.getItem('mineDresserDB');
             if (saved) {
                 try { db = JSON.parse(saved); } catch(e) { console.error("Błąd pamięci"); }
             } else {
-                // Przykładowe dane na start
                 db.sections = [{ id: "headwear", name: "Czapki", maxEquip: 1 }];
             }
             renderUI();
@@ -261,7 +285,6 @@
             renderUI();
         }
 
-        // OPERACJE NA BAZIE (CRUD)
         function addSection() {
             const id = document.getElementById('secId').value.trim();
             const name = document.getElementById('secName').value.trim();
@@ -282,7 +305,7 @@
 
         function deleteSection(id) {
             if(db.items.some(i => i.sectionId === id)) {
-                return toast("Nie możesz usunąć tej sekcji! Posiada ona przypisane ubrania. Usuń je najpierw.", "error");
+                return toast("Ta sekcja posiada przypisane ubrania. Usuń je najpierw.", "error");
             }
             if(confirm("Na pewno usunąć tę sekcję?")) {
                 db.sections = db.sections.filter(s => s.id !== id);
@@ -292,10 +315,12 @@
         }
 
         function addItem() {
-            if(db.sections.length === 0) return toast("Najpierw musisz dodać chociaż jedną sekcję!", "error");
+            if(db.sections.length === 0) return toast("Najpierw musisz dodać sekcję!", "error");
+
+            generateItemId(); // Upewniamy się że mamy najświeższe wyliczone ID tuż przed zapisem
 
             const item = {
-                id: document.getElementById('itemId').value.trim(),
+                id: document.getElementById('itemId').value,
                 name: document.getElementById('itemName').value.trim(),
                 sectionId: document.getElementById('itemSec').value,
                 type: document.getElementById('itemType').value,
@@ -307,8 +332,8 @@
                 textureUrl: document.getElementById('itemUrl').value.trim()
             };
 
-            if(!item.id || !item.name || !item.textureUrl) return toast("ID, Nazwa i Link do tekstury są wymagane!", "error");
-            if(db.items.find(i => i.id === item.id)) return toast("Ubranie z tym ID już istnieje!", "error");
+            if(!item.id || !item.name || !item.textureUrl) return toast("Nazwa, Sekcja i Link do tekstury są wymagane!", "error");
+            if(db.items.find(i => i.id === item.id)) return toast("Błąd! Konflikt ID (Taki obiekt już istnieje).", "error");
 
             db.items.push(item);
             toast(`Dodano ubranie: ${item.name}`, "success");
@@ -317,7 +342,6 @@
             document.getElementById('itemId').value = "";
             document.getElementById('itemDesc').value = "";
             document.getElementById('itemUrl').value = "";
-            document.getElementById('itemId').dataset.manual = "";
             saveToStorage();
             if(previewMode !== 'itm') switchPreview('itm');
         }
@@ -331,22 +355,19 @@
         }
 
         function clearDatabase() {
-            if(confirm("UWAGA! Czy na pewno chcesz wykasować całą bazę ubrań i sekcji? Ta operacja jest nieodwracalna!")) {
+            if(confirm("UWAGA! Usunąć wszystko? Operacja nieodwracalna!")) {
                 db = { sections: [], items: [] };
                 saveToStorage();
                 toast("Baza została wyczyszczona", "success");
             }
         }
 
-        // RENDEROWANIE INTERFEJSU
         function renderUI() {
-            // Aktualizacja opcji wyboru sekcji w formularzu ubrań
             const secSelect = document.getElementById('itemSec');
             const currentSecVal = secSelect.value;
             secSelect.innerHTML = db.sections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
             if(currentSecVal && db.sections.find(s=>s.id === currentSecVal)) secSelect.value = currentSecVal;
 
-            // Renderowanie Listy Podglądu
             const listObj = document.getElementById('previewList');
             listObj.innerHTML = '';
 
@@ -358,7 +379,7 @@
                         <div class="list-item">
                             <div class="item-info">
                                 <h4><i class="fa-solid fa-folder-open" style="color:var(--accent)"></i> ${s.name} <span class="badge" style="border:none;">MAX: ${s.maxEquip}</span></h4>
-                                <p>ID: ${s.id} | Przypisane ubrania: ${count}</p>
+                                <p>ID: ${s.id} | Ubrania: ${count}</p>
                             </div>
                             <button class="btn-icon" onclick="deleteSection('${s.id}')"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -381,12 +402,13 @@
                 });
             }
 
-            // Generowanie kodu wyjściowego
             const codeStr = `const mySections = ${JSON.stringify(db.sections, null, 4)};\n\nconst myItems = ${JSON.stringify(db.items, null, 4)};`;
             document.getElementById('outputCode').value = codeStr;
+            
+            // Odświeżenie auto-id po dodaniu czegokolwiek (aby cyferka skoczyła)
+            generateItemId();
         }
 
-        // IMPORT / EXPORT
         function downloadJS() {
             const code = document.getElementById('outputCode').value;
             const blob = new Blob([code], { type: "text/javascript" });
@@ -398,7 +420,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            toast("Pobieranie pliku rozpoczęte", "success");
+            toast("Pobieranie rozpoczęte", "success");
         }
 
         function importDatabase(event) {
@@ -409,7 +431,6 @@
             reader.onload = function(e) {
                 const content = e.target.result;
                 try {
-                    // Sprytny sposób na wyciągnięcie obiektów JS z tekstu (Zabezpieczenie przed błędem parsera)
                     const cleanCode = content.replace(/const /g, 'var '); 
                     const parser = new Function(`${cleanCode}; return { s: typeof mySections !== 'undefined' ? mySections : [], i: typeof myItems !== 'undefined' ? myItems : [] };`);
                     const result = parser();
@@ -419,10 +440,9 @@
                     saveToStorage();
                     toast("Pomyślnie zaimportowano bazę!", "success");
                 } catch(err) {
-                    console.error(err);
                     toast("Błąd odczytu! Plik nie jest poprawnym database.js", "error");
                 }
-                event.target.value = ""; // Reset inputu
+                event.target.value = ""; 
             };
             reader.readAsText(file);
         }
@@ -434,18 +454,18 @@
             toast("Skopiowano kod do schowka!", "success");
         }
 
-        // NARZĘDZIA POMOCNICZE
+        // ZMODYFIKOWANY SLUGIFY (Zamienia spacje i myślniki na jedno podkreślenie)
         function slugify(text) {
-            const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìıİłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
-            const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
+            const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìıİłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/-,:;';
+            const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz_______';
             const p = new RegExp(a.split('').join('|'), 'g');
             return text.toString().toLowerCase()
-                .replace(/\s+/g, '_')
-                .replace(p, c => b.charAt(a.indexOf(c)))
+                .replace(/\s+/g, '_')           // Spacje na podkreślenie
+                .replace(p, c => b.charAt(a.indexOf(c))) // Polskie znaki i inne na normalne litery / _
                 .replace(/&/g, '_and_')
-                .replace(/[^\w\-]+/g, '')
-                .replace(/\-\-+/g, '_')
-                .replace(/^-+/, '').replace(/-+$/, '');
+                .replace(/[^\w\_]+/g, '')       // Usuń wszystko co nie jest literą, cyfrą lub _
+                .replace(/\_\_+/g, '_')         // Złącz wiele podkreśleń w jedno
+                .replace(/^_/, '').replace(/_$/, ''); // Usuń na początku i na końcu
         }
 
         function toast(msg, type = "success") {
