@@ -299,5 +299,29 @@ const myItems = [
             "url": ""
         },
         "textureUrl": "https://i.ibb.co/rKNZ96QT/cape-armlets-zombie-horse-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_15th_anniversary_by_jurajskistas_1",
+        "name": "15th Anniversary",
+        "sectionId": "cape_armlets",
+        "type": "steve",
+        "description": "Creeper armlets matching the 15th Anniversary Cape",
+        "author": {
+            "name": "JurajskiStaś",
+            "url": "https://www.youtube.com/@JurajskiStas"
+        },
+        "textureUrl": "https://i.ibb.co/kVh54nbj/cape-armlets-15th-anniversary-by-jurajskistas-1.png"
+    },
+    {
+        "id": "cape_armlets_15th_anniversary_by_jurajskistas_2",
+        "name": "15th Anniversary",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Creeper armlets matching the 15th Anniversary Cape",
+        "author": {
+            "name": "JurajskiStaś",
+            "url": "https://www.youtube.com/@JurajskiStas"
+        },
+        "textureUrl": "https://i.ibb.co/m5Gk2sSn/cape-armlets-15th-anniversary-by-jurajskistas-2.png"
     }
 ];
