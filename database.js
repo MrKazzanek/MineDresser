@@ -203,5 +203,29 @@ const myItems = [
             "url": ""
         },
         "textureUrl": "https://i.ibb.co/XZYxGSyX/cape-armlets-pan-by-qozaworks-2.png"
+    },
+    {
+        "id": "cape_armlets_founders_by_qozaworks_1",
+        "name": "Founder's",
+        "sectionId": "cape_armlets",
+        "type": "steve",
+        "description": "Golden armlets matching the Founder's Cape. Also created by Jurajski Staś.",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/R4M526Xy/cape-armlets-founders-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_founders_by_qozaworks_2",
+        "name": "Founder's",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Golden armlets matching the Founder's Cape. Also created by Jurajski Staś.",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/tM91382z/cape-armlets-founders-by-qozaworks-2.png"
     }
 ];
