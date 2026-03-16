@@ -155,5 +155,53 @@ const myItems = [
             "url": ""
         },
         "textureUrl": "https://i.ibb.co/BFTQQmF/cape-armlets-minecraft-experience-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_common_by_qozaworks_1",
+        "name": "Common",
+        "sectionId": "cape_armlets",
+        "type": "steve",
+        "description": "Armlets supposedly for a Common Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/pjQc4q7H/cape-armlets-common-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_common_by_qozaworks_2",
+        "name": "Common",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Armlets supposedly for a Common Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/m5ct43F9/cape-armlets-common-by-qozaworks-2.png"
+    },
+    {
+        "id": "cape_armlets_pan_by_qozaworks_1",
+        "name": "Pan",
+        "sectionId": "cape_armlets",
+        "type": "steve",
+        "description": "Pancake armlets for the Pan Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/fYW9DXcm/cape-armlets-pan-by-qozaworks-1.png"
+    },
+    {
+        "id": "cape_armlets_pan_by_qozaworks_2",
+        "name": "Pan",
+        "sectionId": "cape_armlets",
+        "type": "alex",
+        "description": "Pancake armlets for the Pan Cape",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/XZYxGSyX/cape-armlets-pan-by-qozaworks-2.png"
     }
 ];
