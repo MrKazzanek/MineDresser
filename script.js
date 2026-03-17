@@ -87,7 +87,7 @@ function applyTheme(themeName) {
     }
 }
 
-// 100% NIEZAWODNA FUNKCJA - Ignoruje błędy API i bada strukturę pikseli w pliku obrazka
+
 async function fetchSkinFromUsername() {
     const username = document.getElementById('usernameInput').value.trim();
     if (!username) return;
@@ -102,7 +102,7 @@ async function fetchSkinFromUsername() {
         
         const skinUrl = `data:image/png;base64,${data.textures.skin.data}`;
         
-        // Skanujemy pobrany obraz
+        
         const img = await loadImage(skinUrl);
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = 64; 
@@ -110,12 +110,11 @@ async function fetchSkinFromUsername() {
         const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
         tempCtx.drawImage(img, 0, 0);
 
-        // Niezawodny test pikseli: Model Alex ma cieńszą rękę, przez co piksel (X:54, Y:20) musi być przezroczysty.
-        // Jeśli jest tam jakikolwiek kolor (alpha > 0), to znaczy że to na 100% Steve.
+        
         const alpha = tempCtx.getImageData(54, 20, 1, 1).data[3];
         state.modelType = (alpha === 0) ? 'alex' : 'steve';
 
-        // Automatyczna zmiana radio buttona
+        
         const radioBtn = document.querySelector(`input[name="modelType"][value="${state.modelType}"]`);
         if (radioBtn) radioBtn.checked = true;
 
@@ -123,7 +122,6 @@ async function fetchSkinFromUsername() {
         startGame(skinUrl); 
 
     } catch (e) {
-        // Zapasowe API w razie awarii pierwszego (też ze skanerem pikseli)
         try {
             const skinUrl = `https://minotar.net/skin/${username}?_=${Date.now()}`;
             const img = await loadImage(skinUrl);
@@ -149,7 +147,6 @@ async function fetchSkinFromUsername() {
     }
 }
 
-// Przy wczytywaniu pliku z komputera też wymuszamy automatyczne rozpoznawanie (Alex/Steve) na bazie pikseli
 function loadSkinFromFile(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -294,7 +291,6 @@ function renderWardrobe(filterText = "") {
         const sectionItems = myItems.filter(item => {
             if (item.sectionId !== section.id) return false;
             
-            // Poprawione filtrowanie (Ignoruje wielkość liter np. jeśli w bazie wstawisz "Steve" a nie "steve")
             const itemType = (item.type || 'all').toLowerCase();
             if (itemType !== 'all' && itemType !== state.modelType) return false;
             
