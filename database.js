@@ -8,6 +8,11 @@ const mySections = [
         "id": "cape_armlets",
         "name": "Cape Armlets",
         "maxEquip": 1
+    },
+    {
+        "id": "bracelets",
+        "name": "Bracelets",
+        "maxEquip": 1
     }
 ];
 
@@ -323,5 +328,17 @@ const myItems = [
             "url": "https://www.youtube.com/@JurajskiStas"
         },
         "textureUrl": "https://i.ibb.co/m5Gk2sSn/cape-armlets-15th-anniversary-by-jurajskistas-2.png"
+    },
+    {
+        "id": "bracelets_blaze_by_qozaworks_1",
+        "name": "Blaze",
+        "sectionId": "bracelets",
+        "type": "steve",
+        "description": "Fiery bracelet for the left hand",
+        "author": {
+            "name": "QozaWorks",
+            "url": ""
+        },
+        "textureUrl": "https://i.ibb.co/0VDRMC2L/bracelets-blaze-braclet-by-qozaworks-1.png"
     }
 ];
