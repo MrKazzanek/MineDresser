@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MineDresser - Dev Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --muted: #94a3b8;
+            --border: #334155; --accent: #6366f1; --accent-hover: #818cf8;
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
+            --radius: 12px; --shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; -webkit-user-select: none; }
+        input, textarea, select { user-select: text; -webkit-user-select: text; }
+
+        header { background: var(--panel); padding: 15px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 10;}
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        .logo i { color: var(--accent); }
+        .header-actions { display: flex; gap: 12px; }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; gap: 20px; padding: 20px; }
+        .col { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
+        .col-left { flex: 1; min-width: 360px; max-width: 460px; }
+        .col-right { flex: 2; }
+
+        .tabs { display: flex; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); flex-shrink: 0;}
+        .tab-btn { flex: 1; padding: 14px 10px; background: transparent; border: none; color: var(--muted); font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem; border-bottom: 3px solid transparent; display: flex; align-items: center; justify-content: center; gap: 6px;}
+        .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.02);}
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--panel);}
+
+        .tab-content { display: none; padding: 22px; overflow-y: auto; flex: 1;}
+        .tab-content.active { display: block; }
+        
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
+        input, select { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.95rem; transition: 0.2s; outline: none;}
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+        .hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; display: block; }
+
+        .btn { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem;}
+        .btn-full { width: 100%; margin-top: 10px; padding: 14px;}
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px);}
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2);}
+        .btn-danger:hover { background: var(--danger); color: white; }
+        .btn-icon { padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); cursor: pointer; transition: 0.2s; font-size: 0.85rem;}
+        .btn-icon:hover { background: var(--danger); color: white; border-color: var(--danger);}
+
+        .list-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
+        .list-header h2 { font-size: 1.15rem; }
+        .preview-toggle-btns { display: flex; gap: 6px; }
+
+        .data-list { overflow-y: auto; padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px;}
+        
+        .list-item { background: var(--bg); border: 1px solid var(--border); padding: 14px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;}
+        .list-item:hover { border-color: var(--muted); }
+        .item-info h4 { font-size: 0.95rem; margin-bottom: 4px; color: var(--text); display: flex; align-items: center; gap: 8px;}
+        .item-info p { font-size: 0.82rem; color: var(--muted); }
+        .badge { font-size: 0.7rem; padding: 2px 7px; border-radius: 20px; background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-weight: 600; text-transform: uppercase;}
+        .badge.type-all { color: var(--success); border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.1);}
+        .badge.type-steve { color: #3b82f6; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.1);}
+        .badge.type-alex { color: #d946ef; border-color: rgba(217,70,239,0.3); background: rgba(217,70,239,0.1);}
+        .badge.focus-tag { color: var(--warning); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.1); }
+
+        .code-container { padding: 18px 22px; border-top: 1px solid var(--border); background: #0b1120; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; max-height: 240px;}
+        .code-container textarea { flex: 1; width: 100%; resize: none; background: transparent; border: none; color: #a5b4fc; font-family: monospace; font-size: 0.82rem; outline: none; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 9999;}
+        .toast { background: var(--panel); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 8px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.88rem; animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 2.7s; opacity: 0; transform: translateX(100%);}
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        #importFileInput { display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"><i class="fa-solid fa-database"></i> MineDresser Generator (dev.html)</div>
+        <div class="header-actions">
+            <button class="btn btn-danger" onclick="clearDatabase()"><i class="fa-solid fa-trash"></i> Wyczyść wszystko</button>
+            <label for="importFileInput" class="btn btn-success" style="margin: 0;"><i class="fa-solid fa-file-import"></i> Importuj database.js</label>
+            <input type="file" id="importFileInput" accept=".js" onchange="importDatabase(event)">
+            <button class="btn btn-primary" onclick="downloadJS()"><i class="fa-solid fa-download"></i> Pobierz database.js</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="col col-left">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('items')"><i class="fa-solid fa-shirt"></i> Ubrania</button>
+                <button class="tab-btn" onclick="switchTab('sections')"><i class="fa-solid fa-folder-tree"></i> Sekcje</button>
+                <button class="tab-btn" onclick="switchTab('defaultSkins')"><i class="fa-solid fa-users"></i> Skiny Domyślne</button>
+            </div>
+
+            <!-- TAB 1: ADD ITEM -->
+            <div id="tab-items" class="tab-content active">
+                <div class="form-group">
+                    <label>Kategoria (Sekcja)</label>
+                    <select id="itemSec"></select>
+                </div>
+                <div class="form-group">
+                    <label>Nazwa ubrania</label>
+                    <input type="text" id="itemName" placeholder="np. MCC Crown">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Autor</label>
+                        <input type="text" id="itemAuthorName" placeholder="QozaWorks">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Link autora (Opcj.)</label>
+                        <input type="text" id="itemAuthorUrl" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Unikalne ID <span style="text-transform:none; font-weight:normal; color:var(--accent);">(Auto)</span></label>
+                    <input type="text" id="itemId" placeholder="Generowane automatycznie..." readonly style="background: rgba(0,0,0,0.2); border-color: transparent;">
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Kompatybilność</label>
+                        <select id="itemType">
+                            <option value="all">Uniwersalne (Steve & Alex)</option>
+                            <option value="steve">Tylko Steve (Classic)</option>
+                            <option value="alex">Tylko Alex (Slim)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Kadr kamery 3D</label>
+                        <select id="itemCameraFocus">
+                            <option value="">Zgodny z sekcją (Domyślny)</option>
+                            <option value="head">Głowa (head)</option>
+                            <option value="hands">Dłonie / Ręce (hands)</option>
+                            <option value="chest">Klatka piersiowa (chest)</option>
+                            <option value="legs">Nogi / Stopy (legs)</option>
+                            <option value="full">Cała postać (full)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Opis (Opcjonalnie)</label>
+                    <input type="text" id="itemDesc" placeholder="Krótki opis przedmiotu...">
+                </div>
+                <div class="form-group">
+                    <label>Link do tekstury (.png)</label>
+                    <input type="text" id="itemUrl" placeholder="https://i.ibb.co/.../texture.png">
+                </div>
+                <button class="btn btn-primary btn-full" onclick="addItem()"><i class="fa-solid fa-plus"></i> Dodaj Ubranie do bazy</button>
+            </div>
+
+            <!-- TAB 2: ADD SECTION -->
+            <div id="tab-sections" class="tab-content">
+                <div class="form-group">
+                    <label>Nazwa Sekcji</label>
+                    <input type="text" id="secName" placeholder="np. Czapki i Maski">
+                </div>
+                <div class="form-group">
+                    <label>ID Sekcji</label>
+                    <input type="text" id="secId" placeholder="np. hats">
+                </div>
+                <div class="form-group">
+                    <label>Maksymalna ilość założeń na raz</label>
+                    <input type="number" id="secMax" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Kadr kamery 3D (cameraFocus)</label>
+                    <select id="secCameraFocus">
+                        <option value="head">Głowa (head)</option>
+                        <option value="hands">Dłonie / Ręce (hands)</option>
+                        <option value="chest">Klatka piersiowa (chest)</option>
+                        <option value="legs">Nogi / Stopy (legs)</option>
+                        <option value="full">Cała postać (full)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="addSection()"><i class="fa-solid fa-plus"></i> Stwórz Sekcję</button>
+            </div>
+
+            <!-- TAB 3: ADD DEFAULT SKIN -->
+            <div id="tab-defaultSkins" class="tab-content">
+                <div class="form-group">
+                    <label>ID Skina</label>
+                    <input type="text" id="defSkinId" placeholder="np. steve">
+                </div>
+                <div class="form-group">
+                    <label>Wyświetlana Nazwa</label>
+                    <input type="text" id="defSkinName" placeholder="np. Steve">
+                </div>
+                <div class="form-group">
+                    <label>Typ Modelu</label>
+                    <select id="defSkinModel">
+                        <option value="steve">Classic (Steve - 4px Wide)</option>
+                        <option value="alex">Slim (Alex - 3px)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ścieżka do Tekstury (.png)</label>
+                    <input type="text" id="defSkinUrl" placeholder="default/steve.png">
+                </div>
+                <div class="form-group">
+                    <label>URL Ikonki Głowy</label>
+                    <input type="text" id="defSkinIcon" placeholder="https://minotar.net/helm/MHF_Steve/48.png">
+                </div>
+                <button class="btn btn-primary btn-full" onclick="addDefaultSkin()"><i class="fa-solid fa-plus"></i> Dodaj Domyślny Skin</button>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN PREVIEW -->
+        <div class="col col-right">
+            <div class="list-header">
+                <h2>Podgląd bazy danych</h2>
+                <div class="preview-toggle-btns">
+                    <button class="btn btn-icon" title="Domyślne Skiny" onclick="switchPreview('def')" id="btnPrevDef"><i class="fa-solid fa-users"></i></button>
+                    <button class="btn btn-icon" title="Sekcje" onclick="switchPreview('sec')" id="btnPrevSec"><i class="fa-solid fa-folder"></i></button>
+                    <button class="btn btn-icon" title="Ubrania" onclick="switchPreview('itm')" id="btnPrevItm" style="background:var(--accent); color:white;"><i class="fa-solid fa-shirt"></i></button>
+                </div>
+            </div>
+
+            <div class="data-list" id="previewList"></div>
+
+            <div class="code-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.8rem; font-weight: bold; color: var(--muted); text-transform: uppercase;">Kod pliku (database.js)</span>
+                    <button class="btn btn-icon" onclick="copyCode()" title="Kopiuj Kod" style="background:var(--panel); border:1px solid var(--border);"><i class="fa-solid fa-copy"></i> Kopiuj</button>
+                </div>
+                <textarea id="outputCode" readonly></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        let db = {
+            defaultSkins: [],
+            sections: [],
+            items: []
+        };
+        let previewMode = 'itm'; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            
+            const idTriggers = ['itemName', 'itemAuthorName', 'itemSec'];
+            idTriggers.forEach(id => {
+                document.getElementById(id).addEventListener('input', generateItemId);
+            });
+
+            document.getElementById('secName').addEventListener('input', (e) => {
+                const idInput = document.getElementById('secId');
+                if(!idInput.dataset.manual) idInput.value = slugify(e.target.value);
+            });
+            document.getElementById('secId').addEventListener('input', (e) => { e.target.dataset.manual = "true"; });
+        });
+
+        function generateItemId() {
+            const secId = document.getElementById('itemSec').value;
+            const name = document.getElementById('itemName').value;
+            const author = document.getElementById('itemAuthorName').value;
+
+            if (!secId || !name) {
+                document.getElementById('itemId').value = "";
+                return;
+            }
+
+            const cleanSec = slugify(secId);
+            const cleanName = slugify(name);
+            const cleanAuthor = author ? `_by_${slugify(author)}` : `_by_unknown`;
+
+            const baseId = `${cleanSec}_${cleanName}${cleanAuthor}`;
+            let suffix = 1;
+            let finalId = `${baseId}_${suffix}`;
+            
+            while(db.items.find(i => i.id === finalId)) {
+                suffix++;
+                finalId = `${baseId}_${suffix}`;
+            }
+
+            document.getElementById('itemId').value = finalId;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function switchPreview(mode) {
+            previewMode = mode;
+            document.getElementById('btnPrevDef').style.background = mode === 'def' ? 'var(--accent)' : 'rgba(255,255,255,0.05)';
+            document.getElementById('btnPrevDef').style.color = mode === 'def' ? 'white' : 'var(--muted)';
+            document.getElementById('btnPrevSec').style.background = mode === 'sec' ? 'var(--accent)' : 'rgba(255,255,255,0.05)';
+            document.getElementById('btnPrevSec').style.color = mode === 'sec' ? 'white' : 'var(--muted)';
+            document.getElementById('btnPrevItm').style.background = mode === 'itm' ? 'var(--accent)' : 'rgba(255,255,255,0.05)';
+            document.getElementById('btnPrevItm').style.color = mode === 'itm' ? 'white' : 'var(--muted)';
+            renderUI();
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('mineDresserDB');
+            if (saved) {
+                try {
+                    db = JSON.parse(saved);
+                    if (!db.defaultSkins) db.defaultSkins = [];
+                } catch(e) { console.error("Błąd pamięci"); }
+            }
+            
+            if (!db.sections || db.sections.length === 0) {
+                db.sections = [
+                    { id: "hats", name: "Hats and caps", maxEquip: 1, cameraFocus: "head" },
+                    { id: "cape_armlets", name: "Cape Armlets", maxEquip: 1, cameraFocus: "hands" },
+                    { id: "bracelets", name: "Bracelets", maxEquip: 1, cameraFocus: "hands" }
+                ];
+            }
+
+            if (!db.defaultSkins || db.defaultSkins.length === 0) {
+                db.defaultSkins = [
+                    { id: "steve", name: "Steve", model: "steve", textureUrl: "default/steve.png", iconUrl: "https://minotar.net/helm/MHF_Steve/48.png" },
+                    { id: "alex", name: "Alex", model: "alex", textureUrl: "default/alex.png", iconUrl: "https://minotar.net/helm/Alex/48.png" },
+                    { id: "zuri", name: "Zuri", model: "alex", textureUrl: "default/zuri.png", iconUrl: "https://minotar.net/helm/MHF_Zuri/48.png" },
+                    { id: "sunny", name: "Sunny", model: "steve", textureUrl: "default/sunny.png", iconUrl: "https://minotar.net/helm/MHF_Sunny/48.png" },
+                    { id: "noor", name: "Noor", model: "alex", textureUrl: "default/noor.png", iconUrl: "https://minotar.net/helm/MHF_Noor/48.png" },
+                    { id: "makena", name: "Makena", model: "alex", textureUrl: "default/makena.png", iconUrl: "https://minotar.net/helm/MHF_Makena/48.png" },
+                    { id: "kai", name: "Kai", model: "steve", textureUrl: "default/kai.png", iconUrl: "https://minotar.net/helm/MHF_Kai/48.png" },
+                    { id: "efe", name: "Efe", model: "alex", textureUrl: "default/efe.png", iconUrl: "https://minotar.net/helm/MHF_Efe/48.png" },
+                    { id: "ari", name: "Ari", model: "alex", textureUrl: "default/ari.png", iconUrl: "https://minotar.net/helm/MHF_Ari/48.png" }
+                ];
+            }
+
+            renderUI();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('mineDresserDB', JSON.stringify(db));
+            renderUI();
+        }
+
+        function addSection() {
+            const id = document.getElementById('secId').value.trim();
+            const name = document.getElementById('secName').value.trim();
+            const max = parseInt(document.getElementById('secMax').value);
+            const focus = document.getElementById('secCameraFocus').value;
+
+            if(!id || !name) return toast("Wypełnij wymagane pola sekcji!", "error");
+            if(db.sections.find(s => s.id === id)) return toast("Sekcja z tym ID już istnieje!", "error");
+
+            db.sections.push({ id, name, maxEquip: max, cameraFocus: focus });
+            toast(`Dodano sekcję: ${name}`, "success");
+            
+            document.getElementById('secName').value = "";
+            document.getElementById('secId').value = "";
+            document.getElementById('secId').dataset.manual = "";
+            saveToStorage();
+            if(previewMode !== 'sec') switchPreview('sec');
+        }
+
+        function deleteSection(id) {
+            if(db.items.some(i => i.sectionId === id)) {
+                return toast("Ta sekcja posiada przypisane ubrania. Usuń je najpierw.", "error");
+            }
+            if(confirm("Na pewno usunąć tę sekcję?")) {
+                db.sections = db.sections.filter(s => s.id !== id);
+                toast("Usunięto sekcję", "success");
+                saveToStorage();
+            }
+        }
+
+        function addDefaultSkin() {
+            const id = document.getElementById('defSkinId').value.trim().toLowerCase();
+            const name = document.getElementById('defSkinName').value.trim();
+            const model = document.getElementById('defSkinModel').value;
+            const textureUrl = document.getElementById('defSkinUrl').value.trim();
+            const iconUrl = document.getElementById('defSkinIcon').value.trim();
+
+            if(!id || !name || !textureUrl) return toast("Wypełnij ID, Nazwę oraz Teksturę!", "error");
+            if(db.defaultSkins.find(s => s.id === id)) return toast("Skin z tym ID już istnieje!", "error");
+
+            db.defaultSkins.push({ id, name, model, textureUrl, iconUrl });
+            toast(`Dodano domyślny skin: ${name}`, "success");
+
+            document.getElementById('defSkinId').value = "";
+            document.getElementById('defSkinName').value = "";
+            document.getElementById('defSkinUrl').value = "";
+            document.getElementById('defSkinIcon').value = "";
+            saveToStorage();
+            if(previewMode !== 'def') switchPreview('def');
+        }
+
+        function deleteDefaultSkin(id) {
+            if(confirm("Na pewno usunąć ten domyślny skin?")) {
+                db.defaultSkins = db.defaultSkins.filter(s => s.id !== id);
+                toast("Usunięto skin", "success");
+                saveToStorage();
+            }
+        }
+
+        function addItem() {
+            if(db.sections.length === 0) return toast("Najpierw musisz dodać sekcję!", "error");
+
+            generateItemId(); 
+
+            const focus = document.getElementById('itemCameraFocus').value;
+            const item = {
+                id: document.getElementById('itemId').value,
+                name: document.getElementById('itemName').value.trim(),
+                sectionId: document.getElementById('itemSec').value,
+                type: document.getElementById('itemType').value,
+                description: document.getElementById('itemDesc').value.trim(),
+                author: {
+                    name: document.getElementById('itemAuthorName').value.trim() || "Nieznany",
+                    url: document.getElementById('itemAuthorUrl').value.trim()
+                },
+                textureUrl: document.getElementById('itemUrl').value.trim()
+            };
+
+            if (focus) item.cameraFocus = focus;
+
+            if(!item.id || !item.name || !item.textureUrl) return toast("Nazwa, Sekcja i Link do tekstury są wymagane!", "error");
+            if(db.items.find(i => i.id === item.id)) return toast("Błąd! Konflikt ID (Taki obiekt już istnieje).", "error");
+
+            db.items.push(item);
+            toast(`Dodano ubranie: ${item.name}`, "success");
+
+            document.getElementById('itemName').value = "";
+            document.getElementById('itemId').value = "";
+            document.getElementById('itemDesc').value = "";
+            document.getElementById('itemUrl').value = "";
+            saveToStorage();
+            if(previewMode !== 'itm') switchPreview('itm');
+        }
+
+        function deleteItem(id) {
+            if(confirm("Na pewno usunąć to ubranie?")) {
+                db.items = db.items.filter(i => i.id !== id);
+                toast("Usunięto ubranie", "success");
+                saveToStorage();
+            }
+        }
+
+        function clearDatabase() {
+            if(confirm("UWAGA! Usunąć wszystko? Operacja nieodwracalna!")) {
+                db = { defaultSkins: [], sections: [], items: [] };
+                saveToStorage();
+                toast("Baza została wyczyszczona", "success");
+            }
+        }
+
+        function renderUI() {
+            const secSelect = document.getElementById('itemSec');
+            const currentSecVal = secSelect.value;
+            secSelect.innerHTML = db.sections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            if(currentSecVal && db.sections.find(s=>s.id === currentSecVal)) secSelect.value = currentSecVal;
+
+            const listObj = document.getElementById('previewList');
+            listObj.innerHTML = '';
+
+            if (previewMode === 'def') {
+                if(db.defaultSkins.length === 0) listObj.innerHTML = '<span style="color:var(--muted); text-align:center; margin-top:20px;">Brak domyślnych skinów w bazie</span>';
+                db.defaultSkins.forEach(s => {
+                    listObj.innerHTML += `
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4><i class="fa-solid fa-user-astronaut" style="color:var(--accent)"></i> ${s.name} <span class="badge type-${s.model}">${s.model === 'alex' ? 'Slim' : 'Classic'}</span></h4>
+                                <p>ID: ${s.id} | Path: ${s.textureUrl}</p>
+                            </div>
+                            <button class="btn-icon" onclick="deleteDefaultSkin('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            } else if (previewMode === 'sec') {
+                if(db.sections.length === 0) listObj.innerHTML = '<span style="color:var(--muted); text-align:center; margin-top:20px;">Brak sekcji w bazie</span>';
+                db.sections.forEach(s => {
+                    const count = db.items.filter(i => i.sectionId === s.id).length;
+                    const focusTag = s.cameraFocus ? `<span class="badge focus-tag">KADR: ${s.cameraFocus}</span>` : '';
+                    listObj.innerHTML += `
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4><i class="fa-solid fa-folder-open" style="color:var(--accent)"></i> ${s.name} <span class="badge" style="border:none;">MAX: ${s.maxEquip}</span> ${focusTag}</h4>
+                                <p>ID: ${s.id} | Ubrania: ${count}</p>
+                            </div>
+                            <button class="btn-icon" onclick="deleteSection('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            } else {
+                if(db.items.length === 0) listObj.innerHTML = '<span style="color:var(--muted); text-align:center; margin-top:20px;">Brak ubrań w bazie</span>';
+                db.items.forEach(i => {
+                    const secName = (db.sections.find(s => s.id === i.sectionId) || {}).name || i.sectionId;
+                    const typeBadge = i.type === 'all' ? 'Uniwersalne' : (i.type === 'steve' ? 'Tylko Steve' : 'Tylko Alex');
+                    const focusTag = i.cameraFocus ? `<span class="badge focus-tag">KADR: ${i.cameraFocus}</span>` : '';
+                    listObj.innerHTML += `
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4>${i.name} <span class="badge type-${i.type}">${typeBadge}</span> ${focusTag}</h4>
+                                <p>ID: ${i.id} | Sekcja: ${secName} | Autor: ${i.author.name}</p>
+                            </div>
+                            <button class="btn-icon" onclick="deleteItem('${i.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            }
+
+            const codeStr = `const defaultSkins = ${JSON.stringify(db.defaultSkins, null, 4)};\n\nconst mySections = ${JSON.stringify(db.sections, null, 4)};\n\nconst myItems = ${JSON.stringify(db.items, null, 4)};`;
+            document.getElementById('outputCode').value = codeStr;
+            generateItemId();
+        }
+
+        function downloadJS() {
+            const code = document.getElementById('outputCode').value;
+            const blob = new Blob([code], { type: "text/javascript" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "database.js";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast("Pobieranie rozpoczęte", "success");
+        }
+
+        function importDatabase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                try {
+                    const cleanCode = content.replace(/const /g, 'var '); 
+                    const parser = new Function(`${cleanCode}; return { d: typeof defaultSkins !== 'undefined' ? defaultSkins : [], s: typeof mySections !== 'undefined' ? mySections : [], i: typeof myItems !== 'undefined' ? myItems : [] };`);
+                    const result = parser();
+                    
+                    db.defaultSkins = result.d;
+                    db.sections = result.s;
+                    db.items = result.i;
+                    saveToStorage();
+                    toast("Pomyślnie zaimportowano bazę!", "success");
+                } catch(err) {
+                    toast("Błąd odczytu! Plik nie jest poprawnym database.js", "error");
+                }
+                event.target.value = ""; 
+            };
+            reader.readAsText(file);
+        }
+
+        function copyCode() {
+            const txt = document.getElementById('outputCode');
+            txt.select();
+            document.execCommand('copy');
+            toast("Skopiowano kod do schowka!", "success");
+        }
+
+        function slugify(text) {
+            const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìıİłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/-,:;';
+            const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz_______';
+            const p = new RegExp(a.split('').join('|'), 'g');
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '_')           
+                .replace(p, c => b.charAt(a.indexOf(c))) 
+                .replace(/&/g, '_and_')
+                .replace(/[^\w\_]+/g, '')       
+                .replace(/\_\_+/g, '_')        
+                .replace(/^_/, '').replace(/_$/, ''); 
+        }
+
+        function toast(msg, type = "success") {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check" style="color:var(--success)"></i>' : '<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i>';
+            el.className = `toast ${type}`;
+            el.innerHTML = `${icon} <span>${msg}</span>`;
+            container.appendChild(el);
+            setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, 3000);
+        }
+    </script>
+</body>
+</html>
